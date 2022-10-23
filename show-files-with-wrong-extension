@@ -1,0 +1,64 @@
+#!/usr/bin/perl
+#
+# Author: Maxime BOCHON
+# Created: 2022-10-23
+# Updated: 2022-10-23
+#
+# Description:
+#   Transforms the output of a 'file' command, called with specific parameters, to
+#   display only files for which the name extension does not match the file type
+#   determined from the file content by the 'file' command.
+#
+# How to use it:
+#   file --extension --no-pad --separator "" FILE... | show-files-with-wrong-extension
+#
+# Execution example:
+#   $ file --extension --no-pad --separator "" * | show-files-with-wrong-extension
+#   File 'image-jpeg.png' should have extension among: JPEG/JPG/JPE/JFIF
+#   File 'image-png.JPEG' should have extension among: PNG
+#   File 'image-png.jpg' should have extension among: PNG
+#   No known legit extension for file 'text.txt'.
+# 
+
+use strict;
+use warnings;
+
+while (my $line = <>)
+{
+  if ($line =~ /^(.+) (\?{3}|[a-z0-9]+(\/[a-z0-9]+)*)$/)
+  {
+    # Si la ligne a le format attendu, on extrait le nom du fichier ainsi que
+    # la liste des extensions légitimes vis à vis du contenu du fichier :
+    my ($fileName, $legitExtensionListString) = ($1, $2);
+    
+    # On extrait l'extension du nom de fichier, que l'on force en minuscules :
+    $fileName =~ /^.+\.([^.]+)$/;
+    my $fileExtension = lc $1;
+    
+    # Si aucune extension légitime n'existe pour le contenu du fichier,
+    # on l'indique sur la sortie d'erreur et on s'arrête.
+    if ($legitExtensionListString =~ /^\?{3}$/)
+    {
+      print "No known legit extension for file '$fileName'.\n"
+    }
+    # Sinon, on regarde si l'extension du nom de fichier correspond à une
+    # des extensions légitimes :
+    else
+    {
+      my @legitExtensionList = split(/\//, lc $legitExtensionListString);
+      if (!grep(/^$fileExtension$/, @legitExtensionList))
+      {
+        # On affiche le nom du fichier quand son extension ne correspond pas
+        # au du contenu fichier :
+        print "File '$fileName' should have extension among: "
+          . uc $legitExtensionListString . "\n";
+      }      
+    }
+  }
+  else
+  {
+    print "Invalid input line: $line"; # $line contient un retour à la ligne
+  }
+}
+
+# vim:set ai et sts=2 sw=2 tw=0
