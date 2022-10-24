@@ -11,6 +11,7 @@
 #
 # How to use it:
 #   file --extension --no-pad --separator "" FILE... | show-files-with-wrong-extension
+#   find . -type f | file --extension --no-pad --separator "" -f - | show-files-with-wrong-extension
 #
 # Execution example:
 #   $ file --extension --no-pad --separator "" * | show-files-with-wrong-extension
